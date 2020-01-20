@@ -70,17 +70,16 @@ class Storage {
 
         let cmd = {
             help: (...args) => {
-                _.say("register <key> <value> | Registers a key associated with a value.", "yellow");
-                _.say("search <key> | Searches for a value associated with the key and copies to the clipboard if found.", "yellow");
+                _.say("new <key> <value> | Registers a key associated with a value.", "yellow");
+                _.say("get <key> | Searches for a value associated with the key and copies to the clipboard if found.", "yellow");
             },
-            search: (...args) => {
+            get: (...args) => {
                 if (BlobManager.findMeta(this.loggedUser, args[0])) {
                     _.say("Your data has been copied to your clipboard.");
                 }
                 else _.say("There is no data associated with this key.", "red");
-
             },
-            register: (...args) => {
+            new: (...args) => {
                 BlobManager.createMeta(this.loggedUser, args[0], args[1]);
                 _.say("Your data has been stored!");
             },
