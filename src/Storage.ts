@@ -1,17 +1,33 @@
 import _ from "./tools/Terminal";
 import { Question } from "./tools/Header";
-import { BUFFERS } from "./Dictionary";
-import { encode } from "./BufferTranslation";
 import BlobManager from "./BlobManager";
 
 class Storage {
-    private readonly accessCodes: string[];
     loggedUser: any;
     currentJSON: any;
+    val: string[];
     constructor() {
-        this.accessCodes = [encode(BUFFERS.X1), encode(BUFFERS.X2), encode(BUFFERS.X3), encode(BUFFERS.X4)];
         this.loggedUser = null;
         this.currentJSON = null;
+        this.val = null;
+    }
+
+    async loop() {
+        await _.ask([new Question("input", "menu", "Type help for a list of commands.\n", async (command) => {
+            if (!command) return false;
+            let parse;
+            try {
+                parse = command.split(' ');
+
+            } catch (e) {
+                _.say(e.message, "red");
+                process.exit(1);
+            }
+            this.val = parse;
+
+            return true;
+
+        })]);
     }
 
     async run() {
@@ -23,7 +39,7 @@ class Storage {
             return true;
         })]);
 
-        await _.ask([new Question("input", "two", "Enter your password", async (pw) => {
+        await _.ask([new Question("password", "two", "Enter your password", async (pw) => {
             if (!pw) return false;
             password = pw;
             return true;
@@ -39,6 +55,7 @@ class Storage {
         }
         else if (table["unauthorized"]) {
             _.say(`Incorrect credentials for this account.`, "red");
+            process.exit(1);
         }
         else {
             await _.ask([new Question("input", "create", `No account for the user ${user}, create one? (y/n)`, async (answer) => {
@@ -50,6 +67,43 @@ class Storage {
             })]);
             this.loggedUser = BlobManager.write(user, password);
         }
+
+        let cmd = {
+            help: (...args) => {
+                _.say("register <key> <value> | Registers a key associated with a value.", "yellow");
+                _.say("search <key> | Searches for a value associated with the key and copies to the clipboard if found.", "yellow");
+            },
+            search: (...args) => {
+                if (BlobManager.findMeta(this.loggedUser, args[0])) {
+                    _.say("Your data has been copied to your clipboard.");
+                }
+                else _.say("There is no data associated with this key.", "red");
+
+            },
+            register: (...args) => {
+                BlobManager.createMeta(this.loggedUser, args[0], args[1]);
+                _.say("Your data has been stored!");
+            },
+            exit: (...args) => {
+                _.say("Alright, bye!", "blue");
+            }
+        };
+        try {
+            await this.loop();
+            cmd[this.val[0]](this.val[1], this.val[2]);
+        } catch (e) {
+            _.say("Invalid command!", "red");
+        }
+
+        while (this.val[0] !== "exit") {
+            try {
+                await this.loop();
+                cmd[this.val[0]](this.val[1], this.val[2]);
+            } catch (e) {
+                _.say("Invalid command!", "red");
+            }
+        }
+
     }
 }
 
