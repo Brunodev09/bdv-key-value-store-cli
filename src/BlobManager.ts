@@ -42,6 +42,16 @@ class BlobManager {
         return true;
     }
 
+    findAllMeta(user: string) {
+        if (!user[this.accessCodes[3]]) return [];
+        
+        let arr: string[] = [];
+        for (let meta in user[this.accessCodes[3]]) {
+            arr.push(decode(meta));
+        }
+        return arr;
+    }
+
     createMeta(user: string, key: string, value: string) {
         user[this.accessCodes[3]][encode(key)] = encode(value);
         this.write();

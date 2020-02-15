@@ -72,6 +72,17 @@ class Storage {
             help: (...args) => {
                 _.say("new <key> <value> | Registers a key associated with a value.", "yellow");
                 _.say("get <key> | Searches for a value associated with the key and copies to the clipboard if found.", "yellow");
+                _.say("list | List all your stored data by key.", "yellow");
+            },
+            list: () => {
+                const arrOfMeta: string[] = BlobManager.findAllMeta(this.loggedUser);
+                if (arrOfMeta.length) {
+                    _.say('---------------------');
+                    for (let meta of arrOfMeta) {
+                        _.say("- " + meta);
+                    }
+                    _.say('---------------------');
+                }
             },
             get: (...args) => {
                 if (BlobManager.findMeta(this.loggedUser, args[0])) {
